@@ -1,5 +1,5 @@
 import user
-
+# 指令模块，用于快速构建指令
 global_cmd_map = {}
 
 
@@ -32,3 +32,6 @@ def execute_command_map():
         res = global_cmd_map[args[0]]["function"](args)
         if not res:
             print(global_cmd_map[args[0]]["help"])
+
+
+print("+ command module loaded")
