@@ -242,6 +242,14 @@ def login():
     # fflush(stdin)
     return i
 
+def initDisk():
+    # diskHead = (diskNode *)
+    # malloc(sizeof(diskNode));
+    # diskHead->maxlength = MaxDisk;
+    # diskHead->useFlag = 0;
+    # diskHead->start = 0;
+    # diskHead->next = NULL;
+    return
 
 def requestDist():  # 括号内： int &startPostion, int maxLength
     flag = 0  # 标记是否分配成功
@@ -269,6 +277,231 @@ def requestDist():  # 括号内： int &startPostion, int maxLength
     # p = p->next;
     return flag
 
+
+def fileCreate():  # 参数：char fileName[], int length, char fileKind[]
+    # time_t rawtime
+    # int startPos;
+    # UFD * fileNode, *p;
+    # for (p = userTable[userID].user->next; p != NULL; p = p->next)
+    #     if (!strcmp(p->file->fileName, fileName))
+    #         printf("文件重名，创建文件失败\n");
+    #         system("pause");
+    #         return;
+    # if (requestDist(startPos, length))
+    #     fileNode = (UFD * )malloc(sizeof(UFD));
+    #     fileNode->file = (fileTable * )malloc(sizeof(fileTable)); // 这一步必不可少，fileNode里面的指针也需要申请地址，否则fileNode->file指向会出错
+    #     strcpy(fileNode->file->fileName, fileName);
+    #     strcpy(fileNode->file->fileKind, fileKind);
+    #     fileNode->file->maxlength=length;
+    #     fileNode->file->strat=startPos;
+    #     fileNode->file->openFlag=false;
+    #     time( & rawtime);
+    #     fileNode->file->timeinfo = localtime( & rawtime);
+    #     fileNode->next = NULL;
+    #     if (userTable[userID].user->next == NULL)
+    #         userTable[userID].user->next = fileNode;
+    #     else
+    #         p = userTable[userID].user->next;
+    #         while (p->next) p = p->next;
+    #         p->next = fileNode;
+    #     print("创建文件成功\n");
+    #     system("pause");
+    # else
+    #     print("磁盘空间已满或所创建文件超出磁盘空闲容量，磁盘空间分配失败\n");
+    #     system("pause");
+    return
+
+
+def freeDisk():  # 参数int startPosition
+    # diskNode * p;
+    # for (p = diskHead; p != NULL; p = p->next)
+    #     if (p->start == startPostion)
+    #     break
+    # p->useFlag = false;
+    return
+
+
+def fileDel():  # 参数：char fileName[]
+    # UFD * p, *q, *temp;
+    # q = userTable[userID].user;
+    # p = q->next;
+    # while (p)
+    #     if (!strcmp(p->file->fileName, fileName))
+    #         break
+    #     else
+    #         p = p->next
+    #         q = q->next
+    # if (p)
+    #     if (p->file->openFlag != true) // 先判断是否有进程打开该文件
+    #         temp = p;
+    #         q->next = p->next;
+    #         freeDisk(temp->file->strat); // 磁盘空间回收
+    #         free(temp);
+    #         print("文件删除成功\n");
+    #         system("pause");
+    #     else
+    #         print("该文件已被进程打开,删除失败\n")
+    #         system("pause");
+    # else
+    #     print("没有找到该文件,请检查输入的文件名是否正确\n")
+    #     system("pause");
+    return
+
+def fileCat():
+    startPos = 0
+    length = 0
+    k = 0
+    # UFD * p, *q;
+    # q = userTable[userID].user
+    # for (p = q->next; p != NULL; p = p->next)
+    #     if (!strcmp(p->file->fileName, fileName))
+    #         break
+    # if (p)
+    #     startPos = p->file->strat;
+    #     length = p->file->length;
+    #     p->file->openFlag = true; // 文件打开标记
+    #     print("*****************************************************\n")
+    #     for (int i = startPos; k < length; i++, k++)
+    #         if i % 50 == 0:
+    #             print("\n") // 一行大于50个字符换行
+    #             print(disk[i])
+    #     print("\n\n*****************************************************\n")
+    #     printf("%s已被read进程打开,请用close命令将其关闭\n", p->file->fileName);
+    #     system("pause");
+    # else
+    #     printf("没有找到该文件,请检查输入的文件名是否正确\n");
+    #     system("pause");
+
+
+def fileWrite():  # 参数 fileName[]
+    # UFD * p, *q;
+    # q = userTable[userID].user;
+    # int i, k, startPos;
+    # for (p = q->next; p != NULL; p = p->next)
+    #    if (!strcmp(p->file->fileName, fileName))
+    #    break
+    # if (p)
+    #     if (!strcmp(p->file->fileKind, "r")) // 判断文件类型
+    #     {
+    #         print("该文件是只读文件,写入失败\n")
+    #         return
+    #     }
+    #     char str[500];
+    #     printf("please input content:\n");
+    #     gets(str);
+    #     startPos = p->file->strat;
+    #     p->file->openFlag = true; // 文件打开标记
+    #     p->file->length = strlen(str);
+    #     if (p->file->length > p->file->maxlength)
+    #         print("写入字符串长度大于该文件的总长度,写入失败\n")
+    #         return
+    #     for (i = startPos, k = 0; k < (int)strlen(str); i++, k++)
+    #         disk[i] = str[k];
+    #     print("文件写入成功,请用close命令将该文件关闭\n")
+    # else
+    #     print("没有找到该文件,请检查输入的文件名是否正确\n")
+    # system("pause")
+    return
+
+
+def fileFine():  # 参数: char fileName[]
+    # UFD * p, * q;
+    # q = userTable[userID].user;
+    # for (p = q->next; p != NULL; p = p->next)
+    #     if (!strcmp(p->file->fileName, fileName))
+    #         break
+    # if p:
+    #     print("********************************************\n")
+    #     print("文件名：" + p->file->fileName + '\n')
+    #     print("文件长度：" + p->file->maxlength + '\n')
+    #     print("文件在存储空间的起始地址：" + p->file->strat + '\n')
+    #     print("文件类型：" + p->file->fileKind + '\n')
+    #     print("创建时间：" + asctime(p->file->timeinfo) + '\n')
+    #     print("********************************************\n")
+    # else:
+    #     print("没有找到该文件,请检查输入的文件名是否正确\n")
+    return
+
+
+def chmod():  # 参数： char fileName[], char kind[]
+    # UFD * p, *q;
+    # q = userTable[userID].user;
+    # for (p = q->next; p != NULL; p = p->next)
+    #     if (!strcmp(p->file->fileName, fileName))
+    #     break
+    # if p:
+    #     p->file->fileKind = kind
+    #     print("修改文件类型成功\n")
+    # else:
+    #     print("没有找到该文件,请检查输入的文件名是否正确\n")
+    return
+
+
+def fileRen():  # char fileName[], char name[]
+    # UFD * p, *q;
+    # q = userTable[userID].user;
+    # for (p = q->next; p != NULL; p = p->next)
+    #     if (!strcmp(p->file->fileName, fileName))
+    #         break
+    # if p:
+    #     while (q->next)
+    #         if (!strcmp(q->next->file->fileName, name))
+    #             print("您输入的文件名已存在,重命名失败\n")
+    #             return
+    #         q = q->next;
+    #     p->file->fileName = name
+    #     print("重命名成功\n")
+    # else:
+    #     print("没有找到该文件,请检查输入的文件名是否正确\n")
+    return
+
+
+def fileDir():  # 参数：char userName[]
+    # UFD * p;
+    # int i, k;
+    # for (i = 0; i < MaxUser; i++)
+    #     if (!strcmp(userTable[i].userName, userName))
+    #         k = i;
+    #         break
+    # if i == MaxUser:
+    #     print("没有找到该用户，请检查输入用户名是否正确\n")
+    #     return
+    # else:
+    #     p = userTable[k].user->next;
+    #     print("********************************************************************************\n")
+    #     print("文件名  文件长度  文件在磁盘的起始地址  文件类型  创建时间\n")
+    #     for (; p != NULL; p = p->next)
+    #         print("%s       %d             %d           %s  %s", p->file->fileName,p->file->maxlength, p->file->strat, p->file->fileKind, asctime(p->file->timeinfo));
+    #     print("********************************************************************************\n");
+    return
+
+
+def diskShow():
+    # diskNode * p
+    i = 0
+    unusedDisk = 0
+    print("***************************************************************************\n")
+    print(" 盘块号    起始地址       容量(bit)  是否已被使用\n");
+    # for (p = diskHead; p != NULL; p = p->next, i++)
+    #     if (p->useFlag == false)
+    #         unusedDisk += p->maxlength
+    # print("  %d        %d             %d         %d    \n", i, p->start, p->maxlength, p->useFlag);
+    # print("***************************************************************************\n")
+    # print("磁盘空间总容量：512*1024bit 已使用：%dbit  末使用：%dbit\n\n", MaxDisk - unusedDisk, unusedDisk)
+
+
+def fileClose():  # 参数：char fileName[]
+    # UFD * p, *q;
+    # q = userTable[userID].user;
+    # for (p = q->next; p != NULL; p = p->next)
+    #     if (!strcmp(p->file->fileName, fileName))
+    #     break
+    # if p:
+    #     p->file->openFlag = false;
+    #     print("%s文件已关闭\n", p->file->fileName)
+    # else:
+    #     print("没有找到该文件,请检查输入的文件名是否正确\n")
+    return
 
 
 if __name__ == '__main__':
