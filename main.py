@@ -1,3 +1,5 @@
+import file_sys
+
 # #define MaxDisk 512*1024    //模拟最大磁盘空间
 # #define commandAmount 12    //对文件操作的指令数
 # //存储空间管理有关结构体和变量
@@ -505,4 +507,4 @@ def fileClose():  # 参数：char fileName[]
 
 
 if __name__ == '__main__':
-    main()
+    file_sys.start_sys()
