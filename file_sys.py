@@ -1,4 +1,5 @@
 import user
+import disk
 
 # 系统是否处于运行状态
 running = True
