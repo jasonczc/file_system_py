@@ -36,6 +36,8 @@ user_table = user.userTables        # 用户表
 
 user_open_file_table = []
 system_open_file_table = []
+current_node = root
+current_path = "/"
 
 # 新建disk_block_link
 block_num = config.DISK_SIZE / config.BLOCK_SIZE
@@ -57,5 +59,81 @@ def list_block_info(args):
         now_node = now_node.next
 
 
+        #if root.tag == file.TYPE_FILE:
+        #    print("! it is a file item")
+        #    return None
+def search_dic_item(uri, now1=root):
+    now = now1
+    dics = uri.split("/")
+    for i in dics:
+        if i == "":
+            continue
+        flag = False
+        for j in now.dic:
+            if i == j.filename:
+                now = j
+                flag = True
+        if not flag:
+            print(f"cannot find {i}")
+            return None
+    print(dics)
+    return now
+
+def dir(args):
+    res = None
+    if len(args) == 1:
+        res = find_dic_item("/")
+    else:
+        res = find_dic_item(args[1])
+    if res is None:
+        return False
+    for i in res.dic:
+        print(f" | {i.filename}")
+    for i in res.fcb:
+        print(f" + {i.filename}")
+    return True
+
+def find_dic_item(uri):
+    dics = uri.split("/")
+    now = root
+    for i in dics:
+        if i == "":
+            continue
+        flag = False
+        for j in now.dic:
+            if i == j.filename:
+                now = j
+                flag = True
+        if not flag:
+            print(f"cannot find {i}")
+            return None
+    print(dics)
+    return now
+
+
+def cd(args):
+    global current_node
+    res = None
+    if args[1][0] == '/': #绝对目录
+        res = search_dic_item(args[1])
+    else:
+        res = search_dic_item(args[1], now1=current_node)
+    if res is None:
+        print(" cannot find dic")
+        return False
+    current_node = res
+    global current_path
+    if args[1][0] == '/': #绝对目录
+        current_path = args[1]
+    else:
+        current_path = current_path + "/" + args[1]
+    return True
+
+
+
+
 command.register_command("listDisk", list_block_info, "/listDisk")
+command.register_command("dir", dir, "/dir [dictionary]")
+command.register_command("cd", cd, "/cd <path>")
+command.register_command("create", dir, "/create <filename> <content>")
 

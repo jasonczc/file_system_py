@@ -18,6 +18,6 @@ class FileItem:  # 目录索引项,索引可能是文件的索引，也可能是
     def __init__(self):
         self.tag = TYPE_FILE  # 标记位 0 => 文件 1 => 目录
         self.file_name = ""  # 文件名
-        self.fcb = None  # FCB类型列表
-        self.dic = None  # FileItem类型列表
+        self.fcb = []  # FCB类型列表
+        self.dic = []  # FileItem类型列表
 
