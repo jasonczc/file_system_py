@@ -30,7 +30,7 @@ class UFD:
 
 
 userID = -1  # 用户登录的ID号，值为-1时表示没有用户登录
-userTables = []
+userTable = []
 
 
 # 寻找对应的user table文件 假如没有相应记录则返回None
@@ -86,11 +86,6 @@ command.register_command("register", register_user, "/register <username> <passw
 
 # 用户的登陆界面
 def require_login():
-    print(f'''
-需要登陆 使用指令进行登陆
-登陆指令 /login <username> <password>
-注册指令 /register <username> <password> <repeat-password>
-''')
     command.execute_command_map()
 
 
