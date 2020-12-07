@@ -65,8 +65,8 @@ def register_user(args):
     if len(args) < 4:
         return False
     res = find_user_table(args[1])
-    if res is None:
-        print("! 注册失败 用户不存在")
+    if res is not None:
+        print("! 注册失败 用户已经存在")
         return False
     print(" 开始新建用户")
     if args[2] != args[3]:

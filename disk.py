@@ -45,7 +45,8 @@ current_node = root
 current_path = "/"
 
 # 新建disk_block_link
-block_num = config.DISK_SIZE / config.BLOCK_SIZE
+block_num = int(config.DISK_SIZE / config.BLOCK_SIZE)
+print(f"block_num{str(block_num)}")
 # 空闲磁盘链表
 empty_node = None
 for i in range(0, int(block_num)):
@@ -60,7 +61,7 @@ for i in range(0, int(block_num)):
 
 def get_empty_node_size():
     length = 0
-    now = empty_node
+    now = disk_block_link
     while now is not None:
         now = now.next
         length += 1
@@ -209,12 +210,12 @@ def get_free_disk(target_len):
     length = get_empty_node_size()
     if block_len > length:
         return None
-    global empty_node
-    head = empty_node
+    global disk_block_link
+    head = disk_block_link
     now = head
     for i in range(block_len - 1):
         now = now.next
-    empty_node = now.next
+    disk_block_link = now.next
     now.next = None
     return head
 
@@ -335,6 +336,71 @@ def close_command(args):
     return True
 
 
+def read_command(args):
+    if len(args) < 2:
+        return False
+    uid = int(args[1])
+    print(f"{uid} - {len(user_open_file_table)}")
+    if uid >= len(user_open_file_table):
+        print("unknown uid")
+        return False
+    usr_table = user_open_file_table[uid]
+    if usr_table.mode == MODE_WRITE_ONLY:
+        print(f"no permission to read {uid}")
+        return False
+    sid = usr_table.sid
+    sys_table = system_open_file_table[sid]
+    file_item  = sys_table.dic_item
+    node_start = file_item.fcb.file_list
+    res = ""
+    while node_start is not None:
+        res += node_start.content
+        node_start = node_start.next
+    print(f"data:{res}")
+    return True
+
+
+def write_command(args):
+    if len(args) < 3:
+        return False
+    uid = int(args[1])
+    print(f"{uid} - {len(user_open_file_table)}")
+    if uid >= len(user_open_file_table):
+        print("unknown uid")
+        return False
+    usr_table = user_open_file_table[uid]
+    if usr_table.mode == MODE_READ_ONLY:
+        print(f"no permission to write {uid}")
+        return False
+    sid = usr_table.sid
+    sys_table = system_open_file_table[sid]
+    file_item  = sys_table.dic_item
+    node_start = file_item.fcb.file_list
+    while node_start.next is not None:
+        node_start = node_start.next
+    length = len(args[2])
+    free_size = node_start.size
+    need_size = length - free_size
+    if need_size > 0:
+        node_start.next = get_free_disk(need_size)
+        if node_start.next is None:
+            print(f"no enough space")
+            return False
+    left = args[2]
+    left_size = length
+    while left_size != 0 and left != "":
+        cat_size = min(node_start.size - len(node_start.content), len(left))
+        left_size -= cat_size
+        node_start.content += left[0:cat_size]
+        left = left[cat_size:]
+        node_start = node_start.next
+        print(cat_size)
+        print(left_size)
+        print(left)
+    print("done")
+    return True
+
+
 command.register_command("listDisk", list_block_info, "/listDisk")
 command.register_command("dir", dir, "/dir [dictionary]")
 command.register_command("ls", dir, "/ls [dictionary]")
@@ -343,6 +409,5 @@ command.register_command("create", create, "/create <path>")
 command.register_command("mkdir", mkdir, "/mkdir <pathname>")
 command.register_command("open", open_command, "/open <pathname> <mode(0=readonly,1=writeonly,2=readwrite)>")
 command.register_command("close", close_command, "/close <uid>")
-command.register_command("read", mkdir, "/mkdir <pathname>")
-command.register_command("write", mkdir, "/mkdir <pathname>")
-
+command.register_command("read", read_command, "/read <uid>")
+command.register_command("write", write_command, "/write <uid> <stringbuffer>")
