@@ -123,13 +123,13 @@ def dir(args):
         file.TYPE_DICTIONARY: 'dictionary',
         file.TYPE_FILE: 'file'
     }
-    tplt = "{0:{3}^10}\t{1:{3}^10}\t{2:^10}"
-    print(tplt.format("type", "name", "permission", chr(12288)))
+    tplt = "{0:^10}\t{1:{4}^10}\t{2:^20}\t{3:^30}"
+    print(tplt.format("type", "name", "permission", "create_time", chr(12288)))
     for i in res.dic:
         permission = ""
         if i.tag == file.TYPE_FILE:
             permission = i.fcb.permission
-        print(tplt.format(name_dic[i.tag], i.file_name, permission, chr(12288)))
+        print(tplt.format(name_dic[i.tag], i.file_name, permission, time.strftime('%Y-%m-%d %H:%M:%S', time.localtime(i.create_time)),chr(12288)))
     return True
 
 
@@ -430,6 +430,7 @@ def write_command(args):
     sid = usr_table.sid
     sys_table = system_open_file_table[sid]
     file_item = sys_table.dic_item
+    sys_table.dic_item.last_modify_time = int(time.time())
     node_start = file_item.fcb.file_list
     while node_start.next is not None:
         node_start = node_start.next
@@ -590,10 +591,10 @@ command.register_command("ls", dir, "/ls [dictionary]")
 command.register_command("cd", cd, "/cd <path>")
 command.register_command("create", create, "/create <path>")
 command.register_command("mkdir", mkdir, "/mkdir <pathname>")
-command.register_command("open", open_command, "/open <pathname> <mode(1=readonly,2=writeonly,3=readwrite,4=runoly,7=all)>")
+command.register_command("open", open_command, "/open <pathname> <mode(1=readonly,2=writeonly,3=readwrite,4=runonly,7=all)>")
 command.register_command("close", close_command, "/close <uid>")
 command.register_command("read", read_command, "/read <uid>")
 command.register_command("write", write_command, "/write <uid> <stringbuffer>")
 command.register_command("mv", move_command, "/mv <ori_path> <new_path>")
 command.register_command("rm", delete_command, "/rm <path_name>")
-command.register_command("chmod", chmod_command, "/chmod <pathname> <mode(1=readonly,2=writeonly,3=readwrite,4=runoly,7=all)>")
+command.register_command("chmod", chmod_command, "/chmod <pathname> <mode(1=readonly,2=writeonly,3=readwrite,4=runonly,7=all)>")

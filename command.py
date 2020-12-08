@@ -41,8 +41,8 @@ def execute_command_map(user_name, path=""):
             res = global_cmd_map[args[0]]["function"](args)
             if not res:
                 print(global_cmd_map[args[0]]["help"])
-        except Exception:
-            print(Exception)
+        except Exception as err:
+            print(err)
 
 
 
