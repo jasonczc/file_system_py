@@ -236,6 +236,22 @@ def get_file_node(path):
     return find_file_in_node(node, name)
 
 
+def get_file_and_dic_nodes(path):
+    nowdict = path.split("/")
+    need = ""
+    node = root
+    for i in range(len(nowdict) - 1):
+        need += f"/{nowdict[i]}"
+    # print(need)
+    if need != "":
+        node = find_dic_item(need)
+        if node is None:
+            print("!cannot find path")
+            return None
+    name = nowdict[len(nowdict) - 1]
+    return find_file_in_node(node, name), node
+
+
 def create(args):
     if len(args) != 2:
         return False
@@ -401,6 +417,27 @@ def write_command(args):
     return True
 
 
+def move_command(args):
+    if len(args) < 3:
+        return False
+    (f1, d1) = get_file_and_dic_nodes(args[1])
+    (f2, d2) = get_file_and_dic_nodes(args[2])
+    if d1 is None or d2 is None:
+        print("path doesn't exist")
+        return False
+    if f1 is None:
+        print("file doesn't exist")
+        return False
+    if f2 is not None:
+        print("already exist file")
+    d2.dic.append(f1)
+    d1.dic.remove(f1)
+    new_file_name = args[2].split("/")[-1]
+    f1.file_name = new_file_name
+    print("success")
+    return True
+
+
 command.register_command("listDisk", list_block_info, "/listDisk")
 command.register_command("dir", dir, "/dir [dictionary]")
 command.register_command("ls", dir, "/ls [dictionary]")
@@ -411,3 +448,4 @@ command.register_command("open", open_command, "/open <pathname> <mode(0=readonl
 command.register_command("close", close_command, "/close <uid>")
 command.register_command("read", read_command, "/read <uid>")
 command.register_command("write", write_command, "/write <uid> <stringbuffer>")
+command.register_command("mv", move_command, "/mv <ori_path> <new_path>")
