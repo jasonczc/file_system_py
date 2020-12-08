@@ -80,7 +80,7 @@ def mkdir():
 
 
 @app.route('/create',methods=['GET'])
-def mkdir():
+def create():
     data = request.args.get("path")
     disk.create(['', data])
     return return_success_data("success")

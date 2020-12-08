@@ -25,13 +25,19 @@
               BACK
             </v-btn>
             <v-col cols="3" align-self="center">
-            <v-text-field label="folder name" v-model="pathname"></v-text-field>
+            <v-text-field label="name" v-model="pathname"></v-text-field>
             </v-col>
             <v-btn @click="mkdir" class="transparent elevation-0">
               <v-icon>
                 mdi-plus
               </v-icon>
               CREATE FOLDER
+            </v-btn>
+            <v-btn @click="create" class="transparent elevation-0">
+              <v-icon>
+                mdi-plus
+              </v-icon>
+              CREATE FILE
             </v-btn>
           </v-row>
           <v-simple-table>
@@ -134,6 +140,14 @@ export default {
     mkdir() {
       request({
         url: 'mkdir?path=' + (this.nowPath==='/'?'':this.nowPath) + '/' + this.pathname,
+        method: "get"
+      }).then((res) => {
+        this.refresh()
+      })
+    },
+    create() {
+      request({
+        url: 'create?path=' + (this.nowPath==='/'?'':this.nowPath) + '/' + this.pathname,
         method: "get"
       }).then((res) => {
         this.refresh()
