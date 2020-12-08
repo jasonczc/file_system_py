@@ -22,7 +22,7 @@ class FileItem:  # 目录索引项,索引可能是文件的索引，也可能是
         self.tag = TYPE_FILE  # 标记位 0 => 文件 1 => 目录
         self.file_name = ""  # 文件名
         self.fcb: FCB = None  # FCB类型列表
-        self.dic = []  # FileItem类型
+        self.dic:[FileItem] = []  # FileItem类型
         self.create_time = int(time.time())
         self.last_modify_time = int(time.time())
 
