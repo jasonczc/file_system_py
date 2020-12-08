@@ -1,6 +1,5 @@
 import command
 import config
-
 # user 模块 用于控制当前用户
 
 
@@ -29,7 +28,7 @@ class UFD:
 
 
 
-userID = -1  # 用户登录的ID号，值为-1时表示没有用户登录
+userID = None  # 用户登录的ID号，值为None时表示没有用户登录
 userTable = []
 
 
@@ -42,51 +41,8 @@ def find_user_table(username):
     return None
 
 
-# 用户登陆指令
-def login_user(args):
-    if len(args) <= 2:
-        return False
-    print("- 正在验证")
-    table = find_user_table(args[1])
-    if table is None:
-        print("! 未找到该用户")
-        return False
-    if table.userName != "" and table.userName == args[1]:
-        if table.password == args[2]:
-            print("! 登陆成功")
-            return True
-        else:
-            print("! 登陆失败 密码错误")
-            return False
-
-
-# 用户注册指令
-def register_user(args):
-    if len(args) < 4:
-        return False
-    res = find_user_table(args[1])
-    if res is not None:
-        print("! 注册失败 用户已经存在")
-        return False
-    print(" 开始新建用户")
-    if args[2] != args[3]:
-        print(" 密码不一致，请重新输入")
-        return False
-    obj = UserTable()
-    obj.userName = args[1]
-    obj.password = args[2]
-    userTable.append(obj)
-    return True
-
-
-# 注册user模块对应的指令
-command.register_command("login", login_user, "/login <username> <password>")
-command.register_command("register", register_user, "/register <username> <password> <repeat-password>")
-
-
-# 用户的登陆界面
-def require_login():
-    command.execute_command_map()
+def require_command(path=""):
+    command.execute_command_map(userID, path)
 
 
 print("+ user module loaded")

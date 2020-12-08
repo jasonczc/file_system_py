@@ -4,9 +4,11 @@ import user
 import command
 import time
 
-MODE_READ_ONLY = 0    # 只读
-MODE_WRITE_ONLY = 1   # 只写
-MODE_READ_WRITE = 2   # 读写
+MODE_READ_ONLY = 1    # 只读
+MODE_WRITE_ONLY = 2   # 只写
+MODE_READ_WRITE = 3   # 读写(1+2)
+MODE_RUN = 4   # 只执行
+MODE_ALL = 7   # 全部（1+2+4)
 
 
 # 存储节点
@@ -50,7 +52,7 @@ print(f"block_num{str(block_num)}")
 # 空闲磁盘链表
 empty_node = None
 for i in range(0, int(block_num)):
-    if disk_block_link == None:
+    if disk_block_link is None:
         disk_block_link = DiskBlockNode()
         empty_node = disk_block_link
     else:
@@ -80,14 +82,16 @@ def get_node_size(node):
 
 def list_block_info(args):
     now_node = disk_block_link
+    count = 0
     while now_node.next is not None:
-        print(f"{now_node.id} content:{now_node.content} size:{now_node.size}")
+        print(f"{now_node.id} size:{now_node.size}")
         now_node = now_node.next
-
+        count += 1
         # if root.tag == file.TYPE_FILE:
         #    print("! it is a file item")
         #    return None
-
+    print(f"tot free disk block {count}")
+    return True
 
 def search_dic_item(uri, now1=root):
     now = now1
@@ -109,7 +113,7 @@ def search_dic_item(uri, now1=root):
 def dir(args):
     res = None
     if len(args) == 1:
-        res = find_dic_item("/")
+        res = find_dic_item("")
     else:
         res = find_dic_item(args[1])
     if res is None:
@@ -119,8 +123,13 @@ def dir(args):
         file.TYPE_DICTIONARY: 'dictionary',
         file.TYPE_FILE: 'file'
     }
+    tplt = "{0:{3}^10}\t{1:{3}^10}\t{2:^10}"
+    print(tplt.format("type", "name", "permission", chr(12288)))
     for i in res.dic:
-        print(f"{name_dic[i.tag]} {i.file_name}")
+        permission = ""
+        if i.tag == file.TYPE_FILE:
+            permission = i.fcb.permission
+        print(tplt.format(name_dic[i.tag], i.file_name, permission, chr(12288)))
     return True
 
 
@@ -130,9 +139,18 @@ def mkdir(args):
         return False
     nowdict = args[1].split("/")
     need = ""
-    node = root
+    if nowdict[0] == '/':
+        node = root
+    else:
+        node = current_node
     for i in range(len(nowdict) - 1):
-        need += f"/{nowdict[i]}"
+        if need == "":
+            chars = ""
+            if args[1][0] == "/":
+                chars = "/"
+            need += chars + nowdict[i]
+        else:
+            need += f"/{nowdict[i]}"
     # print(need)
     if need != "":
         node = find_dic_item(need)
@@ -155,7 +173,10 @@ def mkdir(args):
 
 def find_dic_item(uri):
     dics = uri.split("/")
-    now = root
+    if len(uri) > 0 and uri[0] == '/':
+        now = root
+    else:
+        now = current_node
     for i in dics:
         if i == "":
             continue
@@ -185,7 +206,10 @@ def cd(args):
     if args[1][0] == '/':  # 绝对目录
         current_path = args[1]
     else:
-        current_path = current_path + "/" + args[1]
+        if current_path[-1] == '/':
+            current_path = current_path + args[1]
+        else:
+            current_path = current_path + "/" + args[1]
     return True
 
 
@@ -201,6 +225,7 @@ def find_path_in_node(node: file.FileItem, pathname: str):
         if i.file_name == pathname and i.tag == file.TYPE_DICTIONARY:
             return i
     return None
+
 
 
 def get_free_disk(target_len):
@@ -223,7 +248,10 @@ def get_free_disk(target_len):
 def get_file_node(path):
     nowdict = path.split("/")
     need = ""
-    node = root
+    if len(path) > 0 and path[0] == '/':
+        node = root
+    else:
+        node = current_node
     for i in range(len(nowdict) - 1):
         need += f"/{nowdict[i]}"
     # print(need)
@@ -239,7 +267,7 @@ def get_file_node(path):
 def get_file_and_dic_nodes(path):
     nowdict = path.split("/")
     need = ""
-    node = root
+    node = current_node
     for i in range(len(nowdict) - 1):
         need += f"/{nowdict[i]}"
     # print(need)
@@ -257,10 +285,17 @@ def create(args):
         return False
     nowdict = args[1].split("/")
     need = ""
-    node = root
+    node = current_node
     for i in range(len(nowdict) - 1):
-        need += f"/{nowdict[i]}"
-    # print(need)
+        if need == "":
+            chars = ""
+            if args[1][0] == "/":
+                chars = "/"
+            need += chars + nowdict[i]
+        else:
+            need += f"/{nowdict[i]}"
+    #print(need)
+    node = current_node
     if need != "":
         node = find_dic_item(need)
         if node is None:
@@ -284,6 +319,7 @@ def create(args):
         print(f"无法请求指定大小")
         return False
     node.dic.append(obj)
+    print("created")
     return True
 
 
@@ -291,10 +327,13 @@ def open_command(args):
     if len(args) < 3:
         return False
     item = get_file_node(args[1])
+    mode = int(args[2])
     if item is None:
         print(f"cannot find path {args[1]}")
         return False
-    mode = int(args[2])
+    if item.fcb.permission == MODE_RUN or (item.fcb.permission == 1 and mode == 2) or (item.fcb.permission == 2 and mode == 1):
+        print("permission is not allowed")
+        return False
     mode_list = [MODE_READ_ONLY, MODE_READ_WRITE, MODE_WRITE_ONLY]
     if mode not in mode_list:
         print("unknown mode")
@@ -390,7 +429,7 @@ def write_command(args):
         return False
     sid = usr_table.sid
     sys_table = system_open_file_table[sid]
-    file_item  = sys_table.dic_item
+    file_item = sys_table.dic_item
     node_start = file_item.fcb.file_list
     while node_start.next is not None:
         node_start = node_start.next
@@ -438,14 +477,123 @@ def move_command(args):
     return True
 
 
+def del_node_and_file(node):
+    for i in node.dic:
+        if i.tag == file.TYPE_FILE:
+            return i
+        if i.tag == file.TYPE_DICTIONARY:
+            del_node_and_file(node)
+
+
+def del_file(file_obj:file.FileItem):
+    node = file_obj.fcb.file_list
+    # 将内容归还至空闲盘块链
+    while node is not None:
+        old_node = node
+        node.content = ""
+        node = node.next
+        global disk_block_link
+        old_node.next = disk_block_link
+        disk_block_link = old_node
+
+
+def delete_command(args):
+    if len(args) < 2:
+        return False
+    (file_obj, path) = get_file_and_dic_nodes(args[1])
+    if path is not None:
+        if file_obj is not None:
+            del_file(file_obj)
+            path.dic.remove(file_obj)
+            print("delete success")
+            return True
+    p1 = find_path_in_node(path, args[1].split("/")[-1])
+    if p1 is not None:
+        del_node_and_file(p1)
+        path.dic.remove(p1)
+        print("delete success")
+        return True
+    print("cannot find target file or path")
+    return False
+
+# 用户登陆指令
+def login_user(args):
+    if len(args) <= 2:
+        return False
+    print("- 正在验证")
+    table = user.find_user_table(args[1])
+    if table is None:
+        print("! 未找到该用户")
+        return False
+    if table.userName != "" and table.userName == args[1]:
+        if table.password == args[2]:
+            print("! 登陆成功")
+            rt = find_dic_item(f"/user/{args[1]}")
+            user.userID = args[1]
+            if rt is not None:
+                global current_node, current_path
+                current_node = rt
+                current_path = f"/user/{args[1]}"
+            return True
+        else:
+            print("! 登陆失败 密码错误")
+            return False
+
+
+# 用户注册指令
+def register_user(args):
+    if len(args) < 4:
+        return False
+    res = user.find_user_table(args[1])
+    if res is not None:
+        print("! 注册失败 用户已经存在")
+        return False
+    print(" 开始新建用户")
+    if args[2] != args[3]:
+        print(" 密码不一致，请重新输入")
+        return False
+    obj = user.UserTable()
+    obj.userName = args[1]
+    obj.password = args[2]
+    user.userTable.append(obj)
+    mkdir(['', '/user'])
+    mkdir(['', f"/user/{args[1]}"])
+    print("注册成功")
+    return True
+
+
+def chmod_command(args):
+    if len(args) < 3:
+        return False
+    item = get_file_node(args[1])
+    mode = int(args[2])
+    if item is None:
+        print(f"cannot find path {args[1]}")
+        return False
+    mode_list = [MODE_READ_ONLY, MODE_READ_WRITE, MODE_WRITE_ONLY, MODE_RUN, MODE_ALL]
+    if mode not in mode_list:
+        print("unknown mode")
+        return False
+    item.fcb.permission = mode
+    print("success")
+    return True
+
+
+mkdir(['', f"/root"])
+register_user(['', "user", "user", "user"])
+login_user(['', "user", "user"])
+command.register_command("login", login_user, "/login <username> <password>")
+command.register_command("register", register_user, "/register <username> <password> <repeat-password>")
 command.register_command("listDisk", list_block_info, "/listDisk")
 command.register_command("dir", dir, "/dir [dictionary]")
 command.register_command("ls", dir, "/ls [dictionary]")
 command.register_command("cd", cd, "/cd <path>")
 command.register_command("create", create, "/create <path>")
 command.register_command("mkdir", mkdir, "/mkdir <pathname>")
-command.register_command("open", open_command, "/open <pathname> <mode(0=readonly,1=writeonly,2=readwrite)>")
+command.register_command("open", open_command, "/open <pathname> <mode(1=readonly,2=writeonly,3=readwrite,4=runoly,7=all)>")
 command.register_command("close", close_command, "/close <uid>")
 command.register_command("read", read_command, "/read <uid>")
 command.register_command("write", write_command, "/write <uid> <stringbuffer>")
 command.register_command("mv", move_command, "/mv <ori_path> <new_path>")
+command.register_command("rm", delete_command, "/rm <path_name>")
+command.register_command("chmod", chmod_command, "/chmod <pathname> <mode(1=readonly,2=writeonly,3=readwrite,4=runoly,7=all)>")

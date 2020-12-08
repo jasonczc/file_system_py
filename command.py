@@ -22,16 +22,28 @@ register_command("help", help_command)
 
 
 # cmd_map 用于分发command以快速执行分支
-def execute_command_map():
-    cmd = input(">")
+def execute_command_map(user_name, path=""):
+    needLogin = False
+    if user_name is None:
+        needLogin = True
+        user_name = ""
+    cmd = input(f"{user_name} {path}>")
     args = cmd.split(" ")
+    allow_login = ['login','register']
+    if needLogin and args[0] not in allow_login:
+        print("login required")
+        return
     if args[0] not in global_cmd_map:
-        print("输入的命令不存在，请重新输入")
-        execute_command_map()
+        print("command not found")
+        return
     else:
-        res = global_cmd_map[args[0]]["function"](args)
-        if not res:
-            print(global_cmd_map[args[0]]["help"])
+        try:
+            res = global_cmd_map[args[0]]["function"](args)
+            if not res:
+                print(global_cmd_map[args[0]]["help"])
+        except Exception:
+            print(Exception)
+
 
 
 print("+ command module loaded")
